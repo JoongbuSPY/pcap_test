@@ -96,13 +96,23 @@ void p_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *p)
     printf("Destination MAC: ");
 
     for(i=0;i<6;i++)
-        printf("%02X ",p[i]);
+    {
+        printf("%02X",p[i]);
+        if(i<5)
+            printf(":");
+    }
+
     printf("\n");
 
     printf("Source MAC: ");
 
     for(i=7;i<=12;i++)
-        printf("%02X ",p[i]);
+    {
+          printf("%02X",p[i]);
+        if(i<12)
+            printf(":");
+    }
+
     printf("\n");
     printf("\n");
 
@@ -112,13 +122,24 @@ void p_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *p)
     printf("IP Source: ");
 
     for(i=26;i<30;i++)
-        printf("%d ",p[i]);
+    {
+        printf("%d",p[i]);
+        if(i<29)
+            printf(".");
+    }
+
     printf("\n");
 
     printf("IP Destination: ");
 
     for(i=30;i<34;i++)
-        printf("%d ",p[i]);
+    {
+        printf("%d",p[i]);
+        if(i<33)
+            printf(".");
+
+    }
+
     printf("\n");
     printf("\n");
 
