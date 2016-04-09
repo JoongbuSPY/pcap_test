@@ -89,15 +89,18 @@ int main()
 void p_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *p)
 {
     int i=0;
-    unsigned char s_port[2],d_port[2];
-    int port;
+    const u_char * packet_eh=p;
+    const u_char * packet_type=p+12;
+    const u_char * packet_ip=p+14;
+    const u_char * packet_protocol=0x00;
+    const u_char * packet_tcp_udp=p+34;
 
     printf("Ethernet!!\n");
     printf("Destination MAC: ");
 
     for(i=0;i<6;i++)
     {
-        printf("%02X",p[i]);
+        printf("%02X",*(packet_eh+i));
         if(i<5)
             printf(":");
     }
@@ -106,87 +109,75 @@ void p_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *p)
 
     printf("Source MAC: ");
 
-    for(i=7;i<=12;i++)
+    for(i=6;i<12;i++)
     {
-          printf("%02X",p[i]);
-        if(i<12)
+          printf("%02X",(*packet_eh+i));
+        if(i<11)
             printf(":");
     }
 
     printf("\n");
     printf("\n");
 
-    if(p[12]==0x08 && p[13]==0x00)
+    if(*(packet_type)==0x08 && *(packet_type+1)==0x00)//IP
+    {
+        packet_protocol=packet_ip+9;
+
         printf("IP Header!!\n");
+        printf("IP Source: ");
 
-    printf("IP Source: ");
+         for(i=12;i<16;i++)
+         {
+              printf("%d",*(packet_ip+i));
+              if(i<15)
+                  printf(".");
+           }
 
-    for(i=26;i<30;i++)
-    {
-        printf("%d",p[i]);
-        if(i<29)
-            printf(".");
-    }
+        printf("\n");
 
-    printf("\n");
+         printf("IP Destination: ");
 
-    printf("IP Destination: ");
-
-    for(i=30;i<34;i++)
-    {
-        printf("%d",p[i]);
-        if(i<33)
-            printf(".");
-
-    }
-
-    printf("\n");
-    printf("\n");
-
-    if(p[23]==0x06)//tcp
-    {
-        printf("TCP !!!!\n");
-        printf("TCP Source Port: ");
-        s_port[0]=p[34];
-        s_port[1]=p[35];
-
-        port=s_port[0] << 8 | s_port[1];
-        printf("%d\n",port);
-
-        printf("TCP Destination Port: ");
-        d_port[0]=p[36];
-        d_port[1]=p[37];
-
-        port=d_port[0] << 8 | d_port[1];
-        printf("%d",port);
+        for(i=16;i<20;i++)
+        {
+            printf("%d",*(packet_ip+i));
+            if(i<19)
+                printf(".");
+        }
 
         printf("\n");
         printf("\n");
 
+        if((*packet_protocol)==0x06)//tcp
+        {
+            printf("TCP !!!!\n");
+            printf("TCP Source Port: ");
+            printf("%d\n",(*packet_tcp_udp) << 8 | *(packet_tcp_udp+1));
+
+            printf("TCP Destination Port: ");
+
+            printf("%d\n",*(packet_tcp_udp+2) << 8 | *(packet_tcp_udp+3));
+
+            printf("\n");
+            printf("\n");
+
+        }
+
+        else if((*packet_protocol)==0x11)//udp
+        {
+            printf("UDP!!!!\n");
+            printf("UDP Source Port: ");
+            printf("%d\n",(*packet_tcp_udp) << 8 | *(packet_tcp_udp+1));
+
+            printf("UDP Destination Port: ");
+            printf("%d\n",(*packet_tcp_udp+2) << 8 | *(packet_tcp_udp+3));
+
+            printf("\n");
+            printf("\n");
+
+        }
+
     }
 
-    if(p[23]==0x11)
-    {
-        printf("UDP!!!!\n");
-        printf("UDP Source Port: ");
-        s_port[0]=p[34];
-        s_port[1]=p[35];
+   }
 
-        port=s_port[0] << 8 | s_port[1];
-        printf("%d\n",port);
-
-        printf("UDP Destination Port: ");
-        d_port[0]=p[36];
-        d_port[1]=p[37];
-
-        port=d_port[0] << 8 | d_port[1];
-        printf("%d",port);
-
-        printf("\n");
-        printf("\n");
-
-    }
-
-
-}
 
